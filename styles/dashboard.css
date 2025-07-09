@@ -1,0 +1,120 @@
+/* Dashboard header */
+header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #1565c0;
+}
+
+.logo {
+  max-height: 48px;
+  margin-right: 16px;
+}
+
+/* Side navigation */
+.sidenav {
+  width: 240px;
+}
+
+.sidenav .user-view {
+  background: #1976d2;
+}
+
+.sidenav .user-view .name,
+.sidenav .user-view .email {
+  color: #fff;
+}
+
+/* Welcome banner */
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #e3f2fd;
+  padding: 24px;
+  border-radius: 8px;
+  margin: 24px 0;
+  flex-wrap: wrap; /* allows wrapping on small screens */
+}
+
+.welcome-banner .avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #1976d2;
+  flex-shrink: 0;
+}
+
+#welcome-message {
+  font-size: clamp(1.2rem, 4vw, 2.5rem); /* Responsive font size */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70vw;
+}
+
+/* Draft summary styles */
+.draft-summary-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.draft-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.draft-summary-label {
+  min-width: 60px;
+  font-weight: bold;
+}
+.draft-summary-league {
+  flex: 1 1 0;
+  min-width: 40px;
+  max-width: 60px;
+  text-align: center;
+}
+.draft-summary-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  margin: 2px 0;
+  position: relative;
+  overflow: hidden;
+}
+.draft-summary-bar-inner {
+  background: #1976d2;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s;
+}
+.draft-summary-league-label {
+  font-size: 0.8em;
+  margin-top: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .welcome-banner {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px;
+    gap: 8px;
+  }
+  #welcome-message {
+    font-size: clamp(1rem, 6vw, 1.5rem);
+    max-width: 60vw;
+  }
+  .sidenav {
+    width: 180px;
+  }
+  .draft-summary-row {
+    gap: 4px;
+  }
+  .draft-summary-league {
+    min-width: 32px;
+    max-width: 40px;
+    font-size: 0.8em;
+  }
+}

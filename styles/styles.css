@@ -1,0 +1,124 @@
+body {
+  margin: 0;
+  font-family: 'Titillium Web', sans-serif;
+  background: linear-gradient(to bottom right, #1b1f3b, #263859);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+}
+
+html {
+  height: 100%;
+}
+
+.logo {
+  width: 160px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 2.8em;
+  color: #ffc400;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+p {
+  font-size: 1.2em;
+  margin: 25px 0;
+  color: #ddd;
+}
+
+input {
+  padding: 12px;
+  font-size: 1em;
+  width: 260px;
+  border-radius: 5px;
+  border: none;
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 25px;
+  font-size: 1em;
+  background-color: #ffc400;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: #ffdb4d;
+}
+
+/* Responsive tweaks for mobile */
+.container {
+  max-width: 95vw !important;
+  margin-top: 10vh !important;
+  padding: 0;
+}
+
+.card {
+  margin: 0 auto;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-content {
+  padding: 24px 12px 16px 12px;
+}
+
+.logo {
+  max-width: 80px !important;
+  margin-bottom: 12px !important;
+}
+
+@media (max-width: 600px) {
+  .logo {
+    width: 100px;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  h2 {
+    font-size: 1.4em;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .logo {
+    width: 120px;
+  }
+
+  .avatar {
+    width: 90px;
+    height: 90px;
+  }
+
+  h2 {
+    font-size: 1.6em;
+  }
+}
+
+.welcome-banner {
+  padding: 40px 10px;
+}
+
+@media (max-width: 400px) {
+  .card-content h5 {
+    font-size: 1.2rem;
+  }
+  .input-field label, .input-field input {
+    font-size: 1rem;
+  }
+}

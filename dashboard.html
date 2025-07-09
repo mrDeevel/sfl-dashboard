@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SFL Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/dashboard.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <!-- Sidenav Trigger -->
+  <a href="#" data-target="slide-out" class="sidenav-trigger" style="position:absolute;top:24px;left:24px;">
+    <i class="material-icons">menu</i>
+  </a>
+
+  <!-- Materialize Sidenav -->
+  <ul id="slide-out" class="sidenav">
+    <li>
+      <div class="user-view">
+        <div class="background" style="background: #1976d2;">
+          <img src="assets/sfl-logo.png" alt="SFL Logo" style="max-width: 80px; margin: 16px auto; display: block; background: white; border-radius: 50%;">
+        </div>
+        <a href="#user"><img class="circle" id="side-avatar" src="assets/sfl-logo.png"></a>
+        <a href="#name"><span class="white-text name" id="side-team-name">Team</span></a>
+      </div>
+    </li>
+    <li><a href="dashboard.html"><i class="material-icons">dashboard</i>Dashboard</a></li>
+    <li><a href="#draft-progress-section"><i class="material-icons">flag</i>Draft Progress</a></li>
+    <li><a href="#!"><i class="material-icons">assignment</i>Reports</a></li>
+    <li><a href="#!"><i class="material-icons">settings</i>Settings</a></li>
+    <li><div class="divider"></div></li>
+    <li><a href="#!" onclick="logoutSFL()"><i class="material-icons">logout</i>Logout</a></li>
+  </ul>
+
+  <!-- Welcome banner with team avatar and name -->
+  <section class="welcome-banner" style="justify-content:center;">
+    <img id="team-avatar" src="assets/avatars/default.png" alt="Team avatar" class="avatar" />
+    <h2 id="welcome-message">Welcome Team</h2>
+  </section>
+
+  <!-- Draft Progress Section (hidden by default) -->
+  <section class="draft-progress" id="draft-progress-section" style="display:none;">
+    <h4>Draft Progress</h4>
+    <ul class="collapsible" id="draft-summary-tiers"></ul>
+  </section>
+
+  <script src="scripts/dashboard.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      M.Sidenav.init(elems);
+
+      // Show Draft Progress section only when menu item is clicked
+      document.querySelector('a[href="#draft-progress-section"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('draft-progress-section').style.display = 'block';
+        // Optionally hide other sections here
+        var sidenav = document.querySelector('.sidenav');
+        var instance = M.Sidenav.getInstance(sidenav);
+        if (instance) instance.close();
+        // Render draft progress if needed
+        if (typeof renderDraftProgress === "function") renderDraftProgress();
+      });
+    });
+
+    function logoutSFL() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
