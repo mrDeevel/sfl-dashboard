@@ -45,49 +45,6 @@ async function loadTeamInfo(username) {
   }
 }
 
-function renderDraftProgress(picksPerLeague = {}) {
-  // List all league letters in your draft
-  const leagueLetters = [
-    'A', 'B', 'C', 'D', 'E', 'F',
-    'G', 'H', 'I', 'J', 'K', 'L',
-    'M', 'N', 'O', 'P', 'Q', 'R',
-    'Z', 'Y', 'X', 'W', 'V', 'U'
-  ];
-  const totalPicks = 192;
-  const container = document.getElementById('draft-summary-tiers');
-  container.innerHTML = `
-    <div class="draft-summary-row">
-      ${leagueLetters.map(letter => {
-        const picksMade = picksPerLeague[letter] || 0;
-        const percent = Math.round((picksMade / totalPicks) * 100);
-        return `
-          <div class="draft-summary-league">
-            <div class="draft-summary-bar">
-              <div class="draft-summary-bar-inner" style="width:${percent}%"></div>
-            </div>
-            <div class="draft-summary-league-label">${letter}</div>
-            <div class="draft-summary-league-count">${picksMade}/${totalPicks}</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  let username = localStorage.getItem("sfl-username");
-  if (!username && window.location.hash) {
-    username = decodeURIComponent(window.location.hash.substring(1));
-    if (username) localStorage.setItem("sfl-username", username);
-  }
-  loadTeamInfo(username);
-
-  // Start polling for draft progress
-  startPollingDraftProgress();
-});
-
-let pollInterval = null;
-
 async function fetchDraftProgress() {
   const range = "Picks!A:I"; // Adjust range if needed
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
@@ -115,8 +72,8 @@ async function updateDraftProgress() {
   const picksPerLeague = {};
   for (let i = startIdx; i < draftData.length; i++) {
     const row = draftData[i];
-    const league = row[0];
-    const timestamp = row[4];
+    const league = row[0]; // League Letter
+    const timestamp = row[5]; // Assuming timestamp is in column F
     if (!league) continue;
     if (!picksPerLeague[league]) picksPerLeague[league] = 0;
     if (timestamp && timestamp.trim() !== "") picksPerLeague[league]++;
@@ -126,58 +83,80 @@ async function updateDraftProgress() {
   renderDraftProgress(picksPerLeague);
 }
 
+function renderDraftProgress(picksPerLeague = {}) {
+  const leagueLetters = [
+    'A', 'B', 'C', 'D', 'E', 'F',
+    'G', 'H', 'I', 'J', 'K', 'L',
+    'M', 'N', 'O', 'P', 'Q', 'R',
+    'Z', 'Y', 'X', 'W', 'V', 'U'
+  ];
+  const totalPicks = 192;
+  const container = document.getElementById('draft-summary-tiers');
+  container.innerHTML = `
+    <div class="draft-summary-row">
+      ${leagueLetters.map(letter => {
+        const picksMade = picksPerLeague[letter] || 0;
+        const percent = Math.round((picksMade / totalPicks) * 100);
+        return `
+          <div class="draft-summary-league" data-league="${letter}" onclick="showDraftPicks('${letter}')">
+            <div class="draft-summary-bar">
+              <div class="draft-summary-bar-inner" style="width:${percent}%"></div>
+            </div>
+            <div class="draft-summary-league-label">${letter}</div>
+            <div class="draft-summary-league-count">${picksMade}/${totalPicks}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function showDraftPicks(league) {
+  const draftData = await fetchDraftProgress();
+  if (!draftData.length) return;
+
+  // Skip header row if present
+  let startIdx = 0;
+  if (draftData[0][0] === "League Letter") startIdx = 1;
+
+  // Filter picks for the selected league
+  const leaguePicks = draftData.slice(startIdx).filter(row => row[0] === league);
+
+  // Populate the modal
+  const modalTitle = document.getElementById('modal-league-title');
+  const modalPicks = document.getElementById('modal-draft-picks');
+  modalTitle.textContent = `Draft Picks for League ${league}`;
+  modalPicks.innerHTML = leaguePicks.map(row => `
+    <li class="collection-item">
+      ${row[1]}: ${row[5]}, ${row[6]} ${row[7]} - ${row[8]}
+    </li>
+  `).join('');
+
+  // Open the modal
+  const modalElem = document.getElementById('draft-picks-modal');
+  const modalInstance = M.Modal.getInstance(modalElem);
+  modalInstance.open();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  let username = localStorage.getItem("sfl-username");
+  if (!username && window.location.hash) {
+    username = decodeURIComponent(window.location.hash.substring(1));
+    if (username) localStorage.setItem("sfl-username", username);
+  }
+  loadTeamInfo(username);
+
+  // Initialize Materialize modal
+  const modalElems = document.querySelectorAll('.modal');
+  M.Modal.init(modalElems);
+
+  // Start polling for draft progress
+  startPollingDraftProgress();
+});
+
+let pollInterval = null;
+
 function startPollingDraftProgress() {
-  // Poll every 15 seconds (adjust as needed)
   updateDraftProgress(); // Initial fetch
   pollInterval = setInterval(updateDraftProgress, 15000);
 }
-
-function stopPollingDraftProgress() {
-  if (pollInterval) clearInterval(pollInterval);
-  pollInterval = null;
-}
-
-// Service worker registration for push notifications
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(registration => {
-      console.log('Service worker registered:', registration);
-      // Subscribe to push notifications
-      return registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: 'BN6z...your_public_vapid_key...'
-      });
-    })
-    .then(subscription => {
-      console.log('Push notification subscribed:', subscription);
-      // Send subscription to server if needed
-    })
-    .catch(err => {
-      console.error('Service worker or push notification registration failed:', err);
-    });
-}
-
-// Handle push notifications
-navigator.serviceWorker.addEventListener('message', event => {
-  const data = event.data.json();
-  console.log('Push notification received:', data);
-
-  // Show a toast or notification UI
-  M.toast({html: `New draft update: ${data.message}`, displayLength: 5000});
-});
-
-// Request notification permission on button click
-document.getElementById('enable-notifications').addEventListener('click', () => {
-  Notification.requestPermission()
-    .then(permission => {
-      if (permission === 'granted') {
-        console.log('Notification permission granted');
-        // Optionally, subscribe to push notifications here
-      } else {
-        console.log('Notification permission denied');
-      }
-    })
-    .catch(err => {
-      console.error('Failed to request notification permission:', err);
-    });
-});
