@@ -30,6 +30,11 @@
     <li><a href="#draft-progress-section"><i class="material-icons">flag</i>Draft Progress</a></li>
     <li><a href="#!"><i class="material-icons">assignment</i>Reports</a></li>
     <li><a href="#!"><i class="material-icons">settings</i>Settings</a></li>
+
+    <!-- Manager section inserted here when enabled -->
+    <li id="manager-section-divider" style="display:none;"><div class="divider"></div></li>
+    <div id="manager-section" style="display:none;"></div>
+
     <li><div class="divider"></div></li>
     <li><a href="#!" onclick="logoutSFL()"><i class="material-icons">logout</i>Logout</a></li>
   </ul>
@@ -45,6 +50,19 @@
     <h4>Draft Progress</h4>
     <ul class="collapsible" id="draft-summary-tiers"></ul>
   </section>
+
+  <!-- Manager Login Modal -->
+  <div id="manager-code-modal" class="modal">
+    <div class="modal-content">
+      <h5>Manager Login</h5>
+      <p>Enter manager code:</p>
+      <input id="managerCodeInput" type="password" class="validate" autocomplete="off" />
+      <span id="managerCodeError" style="color:red;display:none;">Incorrect code. Try again.</span>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" id="managerCodeSubmit" class="modal-close waves-effect waves-green btn-flat">Submit</a>
+    </div>
+  </div>
 
   <script src="scripts/dashboard.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
