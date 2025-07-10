@@ -125,6 +125,38 @@ header {
   padding: 8px 16px;
 }
 
+/* Ticker styles */
+.ticker {
+  position: fixed; /* Fix the ticker to the bottom of the screen */
+  bottom: 0; /* Align it to the bottom */
+  left: 0; /* Align it to the left */
+  width: 100%; /* Make it span the full width of the screen */
+  background: #1565c0;
+  color: white;
+  overflow: hidden; /* Ensure content doesn't overflow */
+  white-space: nowrap;
+  padding: 8px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-top: 2px solid #0d47a1; /* Add a border at the top for separation */
+  z-index: 1000; /* Ensure it stays on top of other elements */
+}
+
+.ticker-content {
+  display: inline-block;
+  animation: scroll 15s linear infinite; /* Smooth scrolling animation */
+  will-change: transform; /* Optimize for performance */
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 /* Responsive tweaks for small screens */
 @media (max-width: 900px) {
   .draft-summary-league {
@@ -144,5 +176,16 @@ header {
   }
   .draft-summary-row {
     gap: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ticker {
+    font-size: 1rem; /* Slightly smaller font size for mobile */
+    padding: 6px 0; /* Adjust padding for smaller screens */
+  }
+
+  .ticker-content {
+    animation: scroll 10s linear infinite; /* Faster scrolling for smaller screens */
   }
 }

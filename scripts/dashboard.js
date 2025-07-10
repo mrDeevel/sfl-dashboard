@@ -46,13 +46,13 @@ async function loadTeamInfo(username) {
 }
 
 async function fetchDraftProgress() {
-  const range = "Picks!A:I"; // Adjust range if needed
+  const range = "Picks!A:J"; // Adjust range if needed
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
   let res, data;
   try {
     res = await fetch(url);
     data = await res.json();
-    console.log("Fetched draft data:", data);
+    console.log("Fetched draft data:", data); // Debugging
   } catch (err) {
     console.error("Failed to fetch draft data:", err);
     return [];
@@ -62,25 +62,52 @@ async function fetchDraftProgress() {
 
 async function updateDraftProgress() {
   const draftData = await fetchDraftProgress();
-  if (!draftData.length) return;
+  if (!draftData.length) {
+    console.error("No draft data available.");
+    return;
+  }
 
   // Skip header row if present
   let startIdx = 0;
   if (draftData[0][0] === "League Letter") startIdx = 1;
 
-  // Count picks made per league
-  const picksPerLeague = {};
-  for (let i = startIdx; i < draftData.length; i++) {
-    const row = draftData[i];
-    const league = row[0]; // League Letter
-    const timestamp = row[5]; // Assuming timestamp is in column F
-    if (!league) continue;
-    if (!picksPerLeague[league]) picksPerLeague[league] = 0;
-    if (timestamp && timestamp.trim() !== "") picksPerLeague[league]++;
+  // Get the latest pick
+  const latestPick = draftData[draftData.length - 1];
+  if (!latestPick || latestPick.length < 9) {
+    console.error("Invalid pick data:", latestPick);
+    return;
   }
 
-  // Render the updated progress
-  renderDraftProgress(picksPerLeague);
+  const pickDetails = {
+    league: latestPick[0],
+    player: latestPick[5],
+    position: latestPick[6],
+    team: latestPick[7],
+    round: latestPick[2],
+    slot: latestPick[3],
+    pick: latestPick[1],
+    teamName: latestPick[8],
+    comment: "Great pick!" // Replace with AI-generated comment if available
+  };
+
+  console.log("Latest pick details:", pickDetails); // Debugging
+
+  updateTicker(pickDetails); // Update the ticker
+}
+
+function updateTicker(pickDetails) {
+  const tickerContent = document.querySelector('.ticker-content');
+  if (!tickerContent) {
+    console.error("Ticker content element not found.");
+    return;
+  }
+
+  if (!pickDetails || !pickDetails.player) {
+    tickerContent.innerHTML = "No draft data available.";
+    return;
+  }
+
+  tickerContent.innerHTML = `BREAKING: ${pickDetails.teamName} (${pickDetails.league}) selects ${pickDetails.player}, ${pickDetails.position} (${pickDetails.team}) - Round ${pickDetails.round} Pick ${pickDetails.pick}`;
 }
 
 function renderDraftProgress(picksPerLeague = {}) {
@@ -139,19 +166,20 @@ async function showDraftPicks(league) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  let username = localStorage.getItem("sfl-username");
-  if (!username && window.location.hash) {
-    username = decodeURIComponent(window.location.hash.substring(1));
-    if (username) localStorage.setItem("sfl-username", username);
+  console.log("DOMContentLoaded event fired"); // Debugging
+
+  const username = localStorage.getItem('sfl-username');
+  if (!username) {
+    console.error("No username found in localStorage.");
+    alert("No username found. Please log in again.");
+    window.location.href = "index.html"; // Redirect back to the login page
+    return;
   }
+
   loadTeamInfo(username);
 
-  // Initialize Materialize modal
-  const modalElems = document.querySelectorAll('.modal');
-  M.Modal.init(modalElems);
-
-  // Remove auto-fetching of draft progress
-  // startPollingDraftProgress(); <-- Comment this out
+  // Call updateDraftProgress to fetch and display the latest draft data
+  updateDraftProgress();
 });
 
 let pollInterval = null;
