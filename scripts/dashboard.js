@@ -150,8 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalElems = document.querySelectorAll('.modal');
   M.Modal.init(modalElems);
 
-  // Start polling for draft progress
-  startPollingDraftProgress();
+  // Remove auto-fetching of draft progress
+  // startPollingDraftProgress(); <-- Comment this out
 });
 
 let pollInterval = null;
@@ -159,4 +159,19 @@ let pollInterval = null;
 function startPollingDraftProgress() {
   updateDraftProgress(); // Initial fetch
   pollInterval = setInterval(updateDraftProgress, 15000);
+}
+
+function loadDraftProgress() {
+  const draftSection = document.getElementById('draft-progress-section');
+
+  // Show the draft progress section
+  draftSection.style.display = '';
+
+  // Fetch and update the draft progress
+  updateDraftProgress();
+
+  // Optional: Start polling for updates
+  if (!pollInterval) {
+    pollInterval = setInterval(updateDraftProgress, 15000);
+  }
 }

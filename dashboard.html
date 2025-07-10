@@ -27,7 +27,7 @@
       </div>
     </li>
     <li><a href="dashboard.html"><i class="material-icons">dashboard</i>Dashboard</a></li>
-    <li><a href="#draft-progress-section"><i class="material-icons">flag</i>Draft Progress</a></li>
+    <li><a href="#draft-progress-section" onclick="loadDraftProgress()"><i class="material-icons">flag</i>Draft Progress</a></li>
     <li><a href="#!"><i class="material-icons">assignment</i>Reports</a></li>
     <li><a href="#!"><i class="material-icons">settings</i>Settings</a></li>
 
@@ -46,9 +46,9 @@
   </section>
 
   <!-- Draft Progress Section -->
-  <section class="draft-progress" id="draft-progress-section" style="display:none;">
+  <section id="draft-progress-section" style="display: none;">
     <h4>Draft Progress</h4>
-    <ul class="collapsible" id="draft-summary-tiers"></ul>
+    <ul id="draft-summary-tiers"></ul>
   </section>
 
   <!-- Draft Picks Modal -->
