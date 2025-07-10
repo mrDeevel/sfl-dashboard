@@ -67,12 +67,14 @@ async function updateDraftProgress() {
     return;
   }
 
-  // Skip header row if present
+  console.log("Draft data received:", draftData); // Debugging
+
   let startIdx = 0;
   if (draftData[0][0] === "League Letter") startIdx = 1;
 
-  // Get the latest pick
   const latestPick = draftData[draftData.length - 1];
+  console.log("Latest pick:", latestPick); // Debugging
+
   if (!latestPick || latestPick.length < 9) {
     console.error("Invalid pick data:", latestPick);
     return;
@@ -90,9 +92,19 @@ async function updateDraftProgress() {
     comment: "Great pick!" // Replace with AI-generated comment if available
   };
 
-  console.log("Latest pick details:", pickDetails); // Debugging
+  console.log("Pick details for ticker:", pickDetails); // Debugging
 
   updateTicker(pickDetails); // Update the ticker
+
+  const picksPerLeague = {};
+  for (let i = startIdx; i < draftData.length; i++) {
+    const league = draftData[i][0];
+    picksPerLeague[league] = (picksPerLeague[league] || 0) + 1;
+  }
+
+  console.log("Updated picks per league:", picksPerLeague); // Debugging
+
+  renderDraftProgress(picksPerLeague);
 }
 
 function updateTicker(pickDetails) {
@@ -111,6 +123,8 @@ function updateTicker(pickDetails) {
 }
 
 function renderDraftProgress(picksPerLeague = {}) {
+  console.log("Picks per league:", picksPerLeague); // Debugging
+
   const leagueLetters = [
     'A', 'B', 'C', 'D', 'E', 'F',
     'G', 'H', 'I', 'J', 'K', 'L',
@@ -147,22 +161,30 @@ async function showDraftPicks(league) {
   if (draftData[0][0] === "League Letter") startIdx = 1;
 
   // Filter picks for the selected league
-  const leaguePicks = draftData.slice(startIdx).filter(row => row[0] === league);
+  const leaguePicks = draftData.slice(startIdx).filter((row) => row[0] === league);
 
   // Populate the modal
   const modalTitle = document.getElementById('modal-league-title');
   const modalPicks = document.getElementById('modal-draft-picks');
   modalTitle.textContent = `Draft Picks for League ${league}`;
-  modalPicks.innerHTML = leaguePicks.map(row => `
+  modalPicks.innerHTML = leaguePicks
+    .map(
+      (row) => `
     <li class="collection-item">
       ${row[1]}: ${row[5]}, ${row[6]} ${row[7]} - ${row[8]}
     </li>
-  `).join('');
+  `
+    )
+    .join('');
 
   // Open the modal
   const modalElem = document.getElementById('draft-picks-modal');
   const modalInstance = M.Modal.getInstance(modalElem);
-  modalInstance.open();
+  if (modalInstance) {
+    modalInstance.open();
+  } else {
+    console.error("Modal instance not found.");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -177,6 +199,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadTeamInfo(username);
+
+  // Initialize Materialize modal
+  const modalElems = document.querySelectorAll('.modal');
+  M.Modal.init(modalElems);
 
   // Call updateDraftProgress to fetch and display the latest draft data
   updateDraftProgress();
