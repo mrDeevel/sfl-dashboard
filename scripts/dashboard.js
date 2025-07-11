@@ -1,3 +1,27 @@
+// Show Draft Progress section only when menu item is clicked
+document.addEventListener('DOMContentLoaded', function() {
+  var elems = document.querySelectorAll('.sidenav');
+  M.Sidenav.init(elems);
+
+  var draftProgressLink = document.querySelector('a[href="#draft-progress-section"]');
+  if (draftProgressLink) {
+    draftProgressLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('draft-progress-section').classList.remove('hidden-section');
+      // Optionally hide other sections here
+      var sidenav = document.querySelector('.sidenav');
+      var instance = M.Sidenav.getInstance(sidenav);
+      if (instance) instance.close();
+      // Render draft progress if needed
+      if (typeof renderDraftProgress === "function") renderDraftProgress();
+    });
+  }
+});
+
+function logoutSFL() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
 const sheetId = "1t2dHCRVavwyX2Vl2ZwjHR8oyLmVMnNVmc8mDmAKVseU";
 const apiKey = "AIzaSyAq-IXRgQL7khW_s4UG_L8aEeNd3jooKuk";
 const range = "Data!C:E"; // C = Team Name, D = User ID, E = Avatar URL (no row numbers, grabs all rows)
@@ -5,13 +29,11 @@ const range = "Data!C:E"; // C = Team Name, D = User ID, E = Avatar URL (no row 
 async function loadTeamInfo(username) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
   const avatarImg = document.getElementById('team-avatar');
-  const welcomeMsg = document.getElementById('welcome-message');
 
   // If username is missing or empty, show default
   if (!username) {
     avatarImg.src = "assets/avatars/default.png";
     avatarImg.alt = "Default avatar";
-    welcomeMsg.textContent = "Welcome Coach";
     return;
   }
 
@@ -20,27 +42,43 @@ async function loadTeamInfo(username) {
     const data = await res.json();
     const rows = data.values || [];
     let found = false;
+    let teamDisplayName = username;
 
     for (let row of rows) {
       const [teamName, userId, avatarUrl] = row;
       if (userId && teamName.toLowerCase() === username.toLowerCase()) {
         avatarImg.src = avatarUrl || "assets/avatars/default.png";
         avatarImg.alt = `${teamName || username} avatar`;
-        welcomeMsg.textContent = `Welcome ${teamName || username}`;
+        teamDisplayName = teamName || username;
         found = true;
         break;
       }
     }
 
+    // Set ticker welcome message
+    const tickerContent = document.getElementById('vertical-ticker-content');
+    if (tickerContent) {
+      const msg = `Welcome ${teamDisplayName}, this is the SFL Dashboard.`;
+      tickerContent.innerHTML = `<div class="ticker-item">${msg}</div><div class="ticker-item">${msg}</div>`;
+    }
+
     if (!found) {
       avatarImg.src = "assets/avatars/default.png";
       avatarImg.alt = "Default avatar";
-      welcomeMsg.textContent = "Welcome Coach";
+      // Set default ticker message
+      if (tickerContent) {
+        const msg = `Welcome Coach, this is the SFL Dashboard.`;
+        tickerContent.innerHTML = `<div class="ticker-item">${msg}</div><div class="ticker-item">${msg}</div>`;
+      }
     }
   } catch (err) {
     avatarImg.src = "assets/avatars/default.png";
     avatarImg.alt = "Default avatar";
-    welcomeMsg.textContent = "Welcome Coach";
+    const tickerContent = document.getElementById('vertical-ticker-content');
+    if (tickerContent) {
+      const msg = `Welcome Coach, this is the SFL Dashboard.`;
+      tickerContent.innerHTML = `<div class="ticker-item">${msg}</div><div class="ticker-item">${msg}</div>`;
+    }
     console.error("Error fetching team info from Google Sheets:", err);
   }
 }
@@ -94,8 +132,6 @@ async function updateDraftProgress() {
 
   console.log("Pick details for ticker:", pickDetails); // Debugging
 
-  updateTicker(pickDetails); // Update the ticker
-
   const picksPerLeague = {};
   for (let i = startIdx; i < draftData.length; i++) {
     const league = draftData[i][0];
@@ -107,20 +143,7 @@ async function updateDraftProgress() {
   renderDraftProgress(picksPerLeague);
 }
 
-function updateTicker(pickDetails) {
-  const tickerContent = document.querySelector('.ticker-content');
-  if (!tickerContent) {
-    console.error("Ticker content element not found.");
-    return;
-  }
 
-  if (!pickDetails || !pickDetails.player) {
-    tickerContent.innerHTML = "No draft data available.";
-    return;
-  }
-
-  tickerContent.innerHTML = `BREAKING: ${pickDetails.teamName} (${pickDetails.league}) selects ${pickDetails.player}, ${pickDetails.position} (${pickDetails.team}) - Round ${pickDetails.round} Pick ${pickDetails.pick}`;
-}
 
 function renderDraftProgress(picksPerLeague = {}) {
   console.log("Picks per league:", picksPerLeague); // Debugging
