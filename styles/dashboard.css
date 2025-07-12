@@ -1,3 +1,184 @@
+/* Dual Ticker Layout */
+.dual-ticker {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  background: #222;
+  color: #fff;
+  z-index: 1000;
+  height: 56px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+}
+
+.ticker-header-container {
+  width: 200px;
+  min-width: 120px;
+  max-width: 240px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #1565c0;
+  border-right: 2px solid #1976d2;
+}
+
+.ticker-header-content {
+  width: 100%;
+  animation: ticker-header-scroll 1.2s cubic-bezier(0.4,0,0.2,1) 1;
+  animation-fill-mode: forwards;
+  transform: translateY(100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2em;
+  white-space: nowrap;
+}
+
+@keyframes ticker-header-scroll {
+  0% { transform: translateY(100%); }
+  80% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+
+.ticker-item-container {
+  flex: 1 1 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #222;
+}
+
+.ticker-item-content {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 1.1em;
+  padding-left: 24px;
+  animation: ticker-item-scroll 12s linear 1;
+  animation-fill-mode: forwards;
+}
+
+@keyframes ticker-item-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@media (max-width: 600px) {
+  .dual-ticker {
+    height: 44px;
+  }
+  .ticker-header-container {
+    width: 110px;
+    font-size: 0.95em;
+  }
+  .ticker-item-content {
+    font-size: 0.95em;
+  }
+}
+/* Limit draft progress rows to a max of 4, responsive to device */
+
+/* Show all bars, wrap into max 4 rows */
+
+/* Show all bars, fit into max 6 rows using CSS grid */
+.draft-progress-rows {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  grid-auto-flow: row;
+  grid-auto-rows: 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.draft-summary-row {
+  display: contents;
+}
+
+.draft-bar {
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .draft-progress-rows {
+    grid-template-rows: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .draft-progress-rows {
+    grid-template-rows: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .draft-progress-rows {
+    grid-template-rows: repeat(3, 1fr);
+  }
+}
+
+.draft-summary-row {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.draft-bar {
+  flex: 1 1 calc(25% - 8px);
+  min-width: 120px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .draft-bar {
+    flex-basis: calc(33.33% - 8px);
+  }
+}
+
+@media (max-width: 600px) {
+  .draft-bar {
+    flex-basis: calc(50% - 8px);
+  }
+}
+
+@media (max-width: 400px) {
+  .draft-bar {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .draft-progress-rows {
+    max-height: calc(var(--draft-row-height, 56px) * 3);
+  }
+}
+
+@media (max-width: 600px) {
+  .draft-progress-rows {
+    max-height: calc(var(--draft-row-height, 56px) * 2);
+  }
+}
+
+@media (max-width: 400px) {
+  .draft-progress-rows {
+    max-height: calc(var(--draft-row-height, 56px) * 1.5);
+  }
+}
+
+/* Optional: set row height variable if needed */
+.draft-summary-row {
+  --draft-row-height: 56px;
+  min-height: var(--draft-row-height);
+}
 /* Center the welcome banner horizontally */
 .center-banner {
   justify-content: center;

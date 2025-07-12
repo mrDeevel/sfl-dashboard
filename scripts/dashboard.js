@@ -1,3 +1,62 @@
+
+// Fetch all ticker news and cycle through them
+
+let tickerNewsItems = [];
+let tickerNewsIndex = 0;
+let tickerNewsTimeout = null;
+let lastTickerHeader = null;
+let headerItemCount = 0;
+
+async function fetchAndShowTickerNews() {
+  const newsRange = 'TickerNews!A:D';
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${newsRange}?key=${apiKey}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const rows = data.values || [];
+    if (rows.length < 2) return; // No news
+    tickerNewsItems = rows.slice(1); // skip header
+    tickerNewsIndex = 0;
+    cycleTickerNews();
+  } catch (err) {
+    console.error('Failed to fetch ticker news:', err);
+  }
+}
+
+function cycleTickerNews() {
+  if (!tickerNewsItems.length) return;
+  const [timestamp, type, tickerNews, tickerHeader] = tickerNewsItems[tickerNewsIndex];
+  const tickerHeaderEl = document.getElementById('ticker-header-content');
+  const tickerItemEl = document.getElementById('ticker-item-content');
+  if (tickerHeaderEl && tickerItemEl) {
+    let headerChanged = tickerHeader !== lastTickerHeader;
+    const showTickerItem = () => {
+      tickerItemEl.textContent = '';
+      tickerItemEl.style.animation = 'none';
+      void tickerItemEl.offsetWidth;
+      setTimeout(() => {
+        tickerItemEl.textContent = tickerNews || '';
+        tickerItemEl.style.animation = 'ticker-item-scroll 12s linear 1';
+        tickerItemEl.style.animationFillMode = 'forwards';
+        tickerNewsTimeout = setTimeout(() => {
+          tickerNewsIndex = (tickerNewsIndex + 1) % tickerNewsItems.length;
+          cycleTickerNews();
+        }, 12000);
+      }, 10);
+    };
+    if (headerChanged) {
+      tickerHeaderEl.textContent = tickerHeader || 'News';
+      tickerHeaderEl.style.animation = 'none';
+      void tickerHeaderEl.offsetWidth;
+      tickerHeaderEl.style.animation = 'ticker-header-scroll 1.2s cubic-bezier(0.4,0,0.2,1) 1';
+      tickerHeaderEl.style.animationFillMode = 'forwards';
+      lastTickerHeader = tickerHeader;
+      setTimeout(showTickerItem, 1200);
+    } else {
+      setTimeout(showTickerItem, 10);
+    }
+  }
+}
 // Show Draft Progress section only when menu item is clicked
 document.addEventListener('DOMContentLoaded', function() {
   var elems = document.querySelectorAll('.sidenav');
@@ -55,29 +114,55 @@ async function loadTeamInfo(username) {
       }
     }
 
-    // Set ticker welcome message
-    const tickerContent = document.getElementById('vertical-ticker-content');
-    if (tickerContent) {
-      const msg = `Welcome ${teamDisplayName}, this is the SFL Dashboard.`;
-      tickerContent.innerHTML = `<div class="ticker-item">${msg}</div><div class="ticker-item">${msg}</div>`;
+
+    // Set dual ticker: header and item
+    const tickerHeader = document.getElementById('ticker-header-content');
+    const tickerItem = document.getElementById('ticker-item-content');
+    if (tickerHeader && tickerItem) {
+      const headerMsg = `Welcome`;
+      const itemMsg = `${teamDisplayName}, this is the SFL Dashboard.`;
+      tickerHeader.textContent = headerMsg;
+      tickerHeader.style.animation = 'ticker-header-scroll 1.2s cubic-bezier(0.4,0,0.2,1) 1';
+      tickerHeader.style.animationFillMode = 'forwards';
+      tickerItem.textContent = '';
+      setTimeout(() => {
+        tickerItem.textContent = itemMsg;
+        tickerItem.style.animation = 'ticker-item-scroll 12s linear 1';
+        tickerItem.style.animationFillMode = 'forwards';
+      }, 1200);
     }
 
     if (!found) {
       avatarImg.src = "assets/avatars/default.png";
       avatarImg.alt = "Default avatar";
-      // Set default ticker message
-      if (tickerContent) {
-        const msg = `Welcome Coach, this is the SFL Dashboard.`;
-        tickerContent.innerHTML = `<div class="ticker-item">${msg}</div><div class="ticker-item">${msg}</div>`;
+      // Set default ticker message for dual ticker
+      if (tickerHeader && tickerItem) {
+        tickerHeader.textContent = 'Welcome';
+        tickerHeader.style.animation = 'ticker-header-scroll 1.2s cubic-bezier(0.4,0,0.2,1) 1';
+        tickerHeader.style.animationFillMode = 'forwards';
+        tickerItem.textContent = '';
+        setTimeout(() => {
+          tickerItem.textContent = 'Coach, this is the SFL Dashboard.';
+          tickerItem.style.animation = 'ticker-item-scroll 12s linear 1';
+          tickerItem.style.animationFillMode = 'forwards';
+        }, 1200);
       }
     }
   } catch (err) {
     avatarImg.src = "assets/avatars/default.png";
     avatarImg.alt = "Default avatar";
-    const tickerContent = document.getElementById('vertical-ticker-content');
-    if (tickerContent) {
-      const msg = `Welcome Coach, this is the SFL Dashboard.`;
-      tickerContent.innerHTML = `<div class="ticker-item">${msg}</div><div class="ticker-item">${msg}</div>`;
+    const tickerHeader = document.getElementById('ticker-header-content');
+    const tickerItem = document.getElementById('ticker-item-content');
+    if (tickerHeader && tickerItem) {
+      tickerHeader.textContent = 'Welcome';
+      tickerHeader.style.animation = 'ticker-header-scroll 1.2s cubic-bezier(0.4,0,0.2,1) 1';
+      tickerHeader.style.animationFillMode = 'forwards';
+      tickerItem.textContent = '';
+      setTimeout(() => {
+        tickerItem.textContent = 'Coach, this is the SFL Dashboard.';
+        tickerItem.style.animation = 'ticker-item-scroll 12s linear 1';
+        tickerItem.style.animationFillMode = 'forwards';
+      }, 1200);
     }
     console.error("Error fetching team info from Google Sheets:", err);
   }
@@ -229,6 +314,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Call updateDraftProgress to fetch and display the latest draft data
   updateDraftProgress();
+
+  // Fetch and show ticker news
+  fetchAndShowTickerNews();
 });
 
 let pollInterval = null;

@@ -48,7 +48,7 @@
   <!-- Draft Progress Section -->
   <section id="draft-progress-section" class="hidden-section">
     <h4>Draft Progress</h4>
-    <div id="draft-summary-tiers">
+    <div id="draft-summary-tiers" class="draft-progress-rows">
       <div class="draft-summary-row">
         <!-- League progress bars will be rendered here by JS -->
       </div>
@@ -83,10 +83,17 @@
 
   <script src="scripts/dashboard.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <!-- Vertical Ticker at Bottom -->
-  <div id="vertical-ticker" class="vertical-ticker">
-    <div class="vertical-ticker-content" id="vertical-ticker-content">
-      <!-- Ticker items will be injected here -->
+  <!-- Dual Ticker at Bottom -->
+  <div id="dual-ticker" class="dual-ticker">
+    <div class="ticker-header-container">
+      <div class="ticker-header-content" id="ticker-header-content">
+        <!-- Ticker header will be injected here -->
+      </div>
+    </div>
+    <div class="ticker-item-container">
+      <div class="ticker-item-content" id="ticker-item-content">
+        <!-- Ticker item will be injected here -->
+      </div>
     </div>
   </div>
 </body>
