@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,12 +46,29 @@
     <img id="team-avatar" src="assets/avatars/default.png" alt="Team avatar" class="avatar" />
   </section>
 
+  <!-- Recent Picks Sidebar/Section -->
+  <aside id="recent-picks-section" class="recent-picks-card-section">
+    <h5>Recent Picks</h5>
+    <div id="recent-picks-cards">
+      <!-- Recent pick cards will be injected here -->
+    </div>
+  </aside>
+
   <!-- Draft Progress Section -->
-  <section id="draft-progress-section" class="hidden-section">
+  <section id="draft-progress-section" class="hidden-section draft-progress-main">
     <h4>Draft Progress</h4>
     <div id="draft-summary-tiers" class="draft-progress-rows">
       <div class="draft-summary-row">
         <!-- League progress bars will be rendered here by JS -->
+      </div>
+    </div>
+    <!-- User League Pick Card -->
+    <div id="user-league-pick-card" class="card user-league-pick-card" style="margin:24px auto 0 auto;max-width:420px;display:none;">
+      <div class="card-content">
+        <span class="card-title" id="user-league-title">Your League Status</span>
+        <div id="user-league-pick-info">
+          <!-- JS will inject: League, current pick, picks until user is on the clock -->
+        </div>
       </div>
     </div>
   </section>
