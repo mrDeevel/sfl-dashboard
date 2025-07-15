@@ -41,59 +41,62 @@
     <li><a href="#!" onclick="logoutSFL()"><i class="material-icons">logout</i>Logout</a></li>
   </ul>
 
-  <!-- Welcome banner with team avatar and name -->
-  <section class="welcome-banner center-banner">
-    <img id="team-avatar" src="assets/avatars/default.png" alt="Team avatar" class="avatar" />
-  </section>
 
-  <!-- Recent Picks Sidebar/Section -->
-  <aside id="recent-picks-section" class="recent-picks-card-section">
-    <h5>Recent Picks</h5>
-    <div id="recent-picks-cards">
-      <!-- Recent pick cards will be injected here -->
-    </div>
-  </aside>
+  <div class="main-content">
+    <!-- Welcome banner with team avatar and name -->
+    <section class="welcome-banner center-banner">
+      <img id="team-avatar" src="assets/avatars/default.png" alt="Team avatar" class="avatar" />
+    </section>
 
-  <!-- Draft Progress Section -->
-  <section id="draft-progress-section" class="hidden-section draft-progress-main">
-    <h4>Draft Progress</h4>
-    <div id="draft-summary-tiers" class="draft-progress-rows">
-      <div class="draft-summary-row">
-        <!-- League progress bars will be rendered here by JS -->
+    <!-- Recent Picks Sidebar/Section -->
+    <aside id="recent-picks-section" class="recent-picks-card-section">
+      <h5>Recent Picks</h5>
+      <div id="recent-picks-cards">
+        <!-- Recent pick cards will be injected here -->
       </div>
-    </div>
-    <!-- User League Pick Card -->
-    <div id="user-league-pick-card" class="card user-league-pick-card" style="margin:24px auto 0 auto;max-width:420px;display:none;">
-      <div class="card-content">
-        <span class="card-title" id="user-league-title">Your League Status</span>
-        <div id="user-league-pick-info">
-          <!-- JS will inject: League, current pick, picks until user is on the clock -->
+    </aside>
+
+    <!-- Draft Progress Section -->
+    <section id="draft-progress-section" class="hidden-section draft-progress-main">
+      <h4>Draft Progress</h4>
+      <div id="draft-summary-tiers" class="draft-progress-rows">
+        <div class="draft-summary-row">
+          <!-- League progress bars will be rendered here by JS -->
         </div>
       </div>
-    </div>
-  </section>
+      <!-- User League Pick Card -->
+      <div id="user-league-pick-card" class="card user-league-pick-card" style="margin:24px auto 0 auto;max-width:420px;display:none;">
+        <div class="card-content">
+          <span class="card-title" id="user-league-title">Your League Status</span>
+          <div id="user-league-pick-info">
+            <!-- JS will inject: League, current pick, picks until user is on the clock -->
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Draft Picks Modal -->
-  <div id="draft-picks-modal" class="modal">
-    <div class="modal-content">
-      <h4 id="modal-league-title"></h4>
-      <ul id="modal-draft-picks" class="collection"></ul>
+    <!-- Draft Picks Modal -->
+    <div id="draft-picks-modal" class="modal">
+      <div class="modal-content">
+        <h4 id="modal-league-title"></h4>
+        <ul id="modal-draft-picks" class="collection"></ul>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close btn waves-effect waves-light">Close</button>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="modal-close btn waves-effect waves-light">Close</button>
-    </div>
-  </div>
 
-  <!-- Manager Login Modal -->
-  <div id="manager-code-modal" class="modal">
-    <div class="modal-content">
-      <h5>Manager Login</h5>
-      <p>Enter manager code:</p>
-      <input id="managerCodeInput" type="password" class="validate" autocomplete="off" />
-      <span id="managerCodeError" style="color:red;display:none;">Incorrect code. Try again.</span>
-    </div>
-    <div class="modal-footer">
-      <a href="#!" id="managerCodeSubmit" class="modal-close waves-effect waves-green btn-flat">Submit</a>
+    <!-- Manager Login Modal -->
+    <div id="manager-code-modal" class="modal">
+      <div class="modal-content">
+        <h5>Manager Login</h5>
+        <p>Enter manager code:</p>
+        <input id="managerCodeInput" type="password" class="validate" autocomplete="off" />
+        <span id="managerCodeError" style="color:red;display:none;">Incorrect code. Try again.</span>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" id="managerCodeSubmit" class="modal-close waves-effect waves-green btn-flat">Submit</a>
+      </div>
     </div>
   </div>
 

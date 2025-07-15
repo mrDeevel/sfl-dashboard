@@ -73,10 +73,10 @@ async function renderRecentPicksCards() {
       }
       let badge = '';
       if (adp && !isNaN(round)) {
-        if (round < adp - 1) {
-          badge = '<span class=\"badge green white-text\" style=\"margin-left:8px;\">Steal</span>';
-        } else if (round > adp + 1) {
-          badge = '<span class=\"badge red white-text\" style=\"margin-left:8px;\">Reach</span>';
+        if (round > adp + 1) {
+          badge = '<span class="badge green white-text" style="margin-left:8px;">Steal</span>';
+        } else if (round < adp - 1) {
+          badge = '<span class="badge red white-text" style="margin-left:8px;">Reach</span>';
         }
       }
       return `
@@ -313,75 +313,77 @@ async function loadTeamInfo(username) {
     // Prepare current pick and countdown info
     let currentPickInfo = '';
     let picksTillUser = '';
-    try {
-      const draftData = await fetchDraftProgress();
-      if (draftData && draftData.length > 1) {
-        let startIdx = draftData[0][0] === 'League Letter' ? 1 : 0;
-        const picks = draftData.slice(startIdx);
-        const userPicks = picks.filter(row => row[8] && row[8].toLowerCase().trim() === username.toLowerCase().trim());
-        // Find next pick for user
-        let nextUserPickIdx = -1;
-        for (let i = 0; i < picks.length; i++) {
-          if (picks[i][8] && picks[i][8].toLowerCase().trim() === username.toLowerCase().trim()) {
-            nextUserPickIdx = i;
-            break;
-          }
-        }
-        // Current pick info
-        const latestPick = picks[picks.length - 1];
-        if (latestPick && latestPick.length >= 9) {
-          const pickAbbr = `${latestPick[2]}.${latestPick[3]}`;
-          const currentPickNum = picks.length;
-          currentPickInfo = `<div class="user-header-current-pick" style="font-size:1em;margin-top:4px;">Current Pick: <b>${pickAbbr}</b> - ${latestPick[5]} (${latestPick[6]}, ${latestPick[7]}) by ${latestPick[8]}</div>`;
-        }
-        // Calculate picks till user's next pick using draft slot
-        let picksTillUser = '';
-        if (typeof draftSlot !== 'undefined' && draftSlot !== null && draftSlot !== '') {
-          let nextPickRow = null;
-          let picksAway = null;
-          for (let i = picks.length; i < draftData.length; i++) {
-            const row = draftData[i];
-            // Compare as string and number
-            if (row[3] != null && row[3].toString().trim() === draftSlot.toString().trim()) {
-              nextPickRow = row;
-              picksAway = i - picks.length;
-              break;
-            }
-          }
-          if (nextPickRow) {
-            const nextPickAbbr = `${nextPickRow[2]}.${nextPickRow[3]}`;
-            picksTillUser = `<div class="user-header-picks-till" style="font-size:1em;color:#388e3c;margin-top:2px;">Your next pick: <b>${nextPickAbbr}</b> (${picksAway} picks away)</div>`;
-          } else {
-            picksTillUser = `<div class=\"user-header-picks-till\" style=\"font-size:1em;color:#388e3c;margin-top:2px;\">No more picks for you in this draft</div>`;
-          }
-        } else {
-          picksTillUser = `<div class=\"user-header-picks-till\" style=\"font-size:1em;color:#388e3c;margin-top:2px;\">No draft slot found</div>`;
-        }
-      }
-    } catch (err) {
-      // fallback to blank
-    }
-    // Find user's draft slot from Picks sheet, column D (index 3)
     let draftSlot = '';
     try {
       const draftData = await fetchDraftProgress();
       if (draftData && draftData.length > 1) {
         let startIdx = draftData[0][0] === 'League Letter' ? 1 : 0;
-        const picksRows = draftData.slice(startIdx);
-        for (let row of picksRows) {
-          if (row[8] && row[8].toLowerCase().trim() === username.toLowerCase().trim()) {
-            draftSlot = row[3];
+        const picks = draftData.slice(startIdx);
+        // Find user's league letter
+        let userLeague = '';
+        for (let i = 0; i < picks.length; i++) {
+          if (picks[i][8] && picks[i][8].toLowerCase().trim() === username.toLowerCase().trim()) {
+            userLeague = picks[i][0];
+            draftSlot = picks[i][3];
             break;
           }
         }
+        // Filter picks for user's league
+        const leaguePicks = userLeague ? picks.filter(row => row[0] === userLeague) : [];
+        // Current pick info: last pick from user's league
+        const latestLeaguePick = leaguePicks.length ? leaguePicks[leaguePicks.length - 1] : null;
+        if (latestLeaguePick && latestLeaguePick.length >= 9) {
+          const pickAbbr = `${latestLeaguePick[2]}.${latestLeaguePick[3]}`;
+          currentPickInfo = `<div class=\"user-header-current-pick\" style=\"font-size:1em;margin-top:4px;\">Current Pick: <b>${pickAbbr}</b> - ${latestLeaguePick[5]} (${latestLeaguePick[6]}, ${latestLeaguePick[7]}) by ${latestLeaguePick[8]}</div>`;
+        }
+        // Calculate picks till user's next pick using draft slot and snake order
+        if (userLeague && draftSlot) {
+          const numTeams = leaguePicks.reduce((set, row) => set.add(row[3]), new Set()).size || 12; // fallback to 12
+          const pickSet = new Set(leaguePicks.map(row => `${row[2]}.${row[3]}`));
+          let userSlot = parseInt(draftSlot, 10);
+          let lastPick = leaguePicks.length ? leaguePicks[leaguePicks.length - 1] : null;
+          let lastRound = lastPick ? parseInt(lastPick[2], 10) : 1;
+          let nextRound = lastRound;
+          let picksAway = 0;
+          let found = false;
+          // Find the next pick for this slot after the last pick
+          while (!found && picksAway < 1000) { // safety limit
+            nextRound++;
+            let slot;
+            if (nextRound % 2 === 1) {
+              slot = userSlot;
+            } else {
+              slot = numTeams - userSlot + 1;
+            }
+            if (!pickSet.has(`${nextRound}.${slot}`)) {
+              found = true;
+              let picksSinceLast = 0;
+              // Count picks away: count picks in leaguePicks after lastPick until this next pick
+              let lastPickIndex = leaguePicks.length - 1;
+              for (let i = lastPickIndex + 1; i < numTeams * 20; i++) { // up to 20 rounds
+                let r = Math.floor(i / numTeams) + 1;
+                let s = (r % 2 === 1) ? userSlot : (numTeams - userSlot + 1);
+                if (r === nextRound && s === slot) break;
+                picksSinceLast++;
+              }
+              let nextPickAbbr = `${nextRound}.${slot}`;
+              picksTillUser = `<div class=\"user-header-picks-till\" style=\"font-size:1em;color:#388e3c;margin-top:2px;\">Your next pick: <b>${nextPickAbbr}</b> (${picksSinceLast + 1} picks away)</div>`;
+            } else {
+              picksAway++;
+            }
+          }
+        } else {
+          picksTillUser = `<div class=\"user-header-picks-till\" style=\"font-size:1em;color:#388e3c;margin-top:2px;\">No draft slot found</div>`;
+        }
+        leagueLetter = userLeague || leagueLetter;
       }
     } catch (err) {
-      draftSlot = '';
+      // fallback to blank
     }
-    banner.innerHTML = `<img id="team-avatar" src="${avatarUrl}" alt="${teamDisplayName} avatar" class="avatar" />
-      <div class="user-header-info" style="display:inline-block;vertical-align:middle;margin-left:16px;text-align:left;">
-        <div class="user-header-username" style="font-size:1.3em;font-weight:600;">${teamDisplayName}</div>
-        <div class="user-header-league" style="font-size:1em;color:#1976d2;">League: ${leagueLetter || 'N/A'}${draftSlot ? ` &nbsp;|&nbsp; Draft Slot: <b>${draftSlot}</b>` : ''}</div>
+    banner.innerHTML = `<img id=\"team-avatar\" src=\"${avatarUrl}\" alt=\"${teamDisplayName} avatar\" class=\"avatar\" />
+      <div class=\"user-header-info\" style=\"display:inline-block;vertical-align:middle;margin-left:16px;text-align:left;\">
+        <div class=\"user-header-username\" style=\"font-size:1.3em;font-weight:600;\">${teamDisplayName}</div>
+        <div class=\"user-header-league\" style=\"font-size:1em;color:#1976d2;\">League: ${leagueLetter || 'N/A'}${draftSlot ? ` &nbsp;|&nbsp; Draft Slot: <b>${draftSlot}</b>` : ''}</div>
         ${currentPickInfo}
         ${picksTillUser}
       </div>`;
@@ -459,10 +461,81 @@ function renderDraftProgress(picksPerLeague = {}) {
     'M', 'N', 'O', 'P', 'Q', 'R',
     'Z', 'Y', 'X', 'W', 'V', 'U'
   ];
-  const totalPicks = 192;
-  // Hide draft progress section
+  const totalRounds = 16;
+  // Try to infer number of teams from picksPerLeague (first league's picks / rounds)
+  let numTeams = 12;
+  for (const league in picksPerLeague) {
+    const picks = picksPerLeague[league];
+    if (picks > 0) {
+      numTeams = Math.max(numTeams, Math.ceil(picks / totalRounds));
+      break;
+    }
+  }
+  const totalPicks = numTeams * totalRounds;
+  // Show draft progress section when selected from the menu
   const draftSection = document.getElementById('draft-progress-section');
-  if (draftSection) draftSection.style.display = 'none';
+  if (draftSection) {
+    draftSection.style.display = '';
+    // Render progress bars for each league
+    let html = '<h5 style="margin-bottom:10px;font-size:1.15em;font-weight:600;letter-spacing:0.5px;">Draft Progress</h5>';
+    html += `<div id="draft-progress-grid" style="
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      width: 100vw;
+      max-width: 100vw;
+      box-sizing: border-box;
+      padding: 0 1vw 60px 1vw;
+      margin: 0 auto 0 auto;">
+    `;
+    // Responsive adjustment for small screens
+    setTimeout(() => {
+      const grid = document.getElementById('draft-progress-grid');
+      if (grid) {
+        const style = document.createElement('style');
+        style.innerHTML = `
+          @media (max-width: 900px) {
+            #draft-progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          }
+          @media (max-width: 600px) {
+            #draft-progress-grid { grid-template-columns: 1fr; }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    }, 0);
+    for (const league of leagueLetters) {
+      if (picksPerLeague[league]) {
+        const picks = picksPerLeague[league];
+        const percent = Math.min(100, Math.round((picks / totalPicks) * 100));
+        html += `
+          <div class="league-progress-card" data-league="${league}" style="min-width:180px;max-width:320px;flex:1 1 180px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 8px #0001;border-radius:8px;background:#fff;transition:box-shadow 0.2s;">
+            <div style="font-weight:500;font-size:0.98em;margin-bottom:2px;padding-top:7px;letter-spacing:0.2px;color:#1976d2;">League ${league}</div>
+            <div class="progress" style="height:16px;background:linear-gradient(90deg,#e3eafc,#f5f7fa);border-radius:6px;overflow:hidden;">
+              <div class="determinate" style="width:${percent}%;background:linear-gradient(90deg,#1976d2 60%,#42a5f5 100%);height:16px;border-radius:6px 0 0 6px;box-shadow:0 0 8px #1976d2a0 inset;"></div>
+            </div>
+            <div style="font-size:0.93em;margin-top:2px;margin-bottom:7px;color:#444;font-weight:400;">${picks} / ${totalPicks}</div>
+          </div>
+        `;
+      }
+    }
+    html += '</div>';
+    draftSection.innerHTML = html;
+    // Add click listeners to show drafted players modal
+    const cards = draftSection.querySelectorAll('.league-progress-card');
+    cards.forEach(card => {
+      card.addEventListener('click', function() {
+        const league = this.getAttribute('data-league');
+        showDraftPicks(league);
+      });
+      card.addEventListener('mouseenter', function() {
+        this.style.boxShadow = '0 4px 16px #1976d255';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.boxShadow = '0 2px 8px #0001';
+      });
+    });
+  }
 }
 
 
