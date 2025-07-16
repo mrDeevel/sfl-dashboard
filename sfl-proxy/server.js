@@ -1,6 +1,7 @@
 const express = require('express');
 let fetch;
 
+const app = express();
 const cors = require('cors');
 app.use(cors());
 async function getFetch() {
@@ -72,9 +73,6 @@ app.get('/api/news', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch news' });
   }
 });
-
-const cors = require('cors');
-app.use(cors());
 
 app.listen(PORT, () => {
   console.log(`SFL Proxy running on port ${PORT}`);
