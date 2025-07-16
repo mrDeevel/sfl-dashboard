@@ -158,7 +158,7 @@ let tickerNewsTimeout = null;
 let lastTickerHeader = null;
 let headerItemCount = 0;
 
-async function fetchAndShowTickerNews() {
+async function fetchAndShowTickerNews(initial = false) {
   const newsRange = 'TickerNews!A:D';
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${newsRange}?key=${apiKey}`;
   try {
@@ -167,8 +167,7 @@ async function fetchAndShowTickerNews() {
     const rows = data.values || [];
     if (rows.length < 2) return; // No news
     tickerNewsItems = rows.slice(1); // skip header
-    tickerNewsIndex = 0;
-    cycleTickerNews();
+    if (initial) cycleTickerNews(); // Only start ticker on initial load
   } catch (err) {
     console.error('Failed to fetch ticker news:', err);
   }
@@ -586,6 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
   M.Modal.init(modalElems);
 
   // Start polling for all dashboard sections
+  fetchAndShowTickerNews(true); // Start ticker on initial load
   startPollingDashboard();
 });
 
@@ -595,12 +595,12 @@ function startPollingDashboard() {
   // Initial fetch for all sections
   updateDraftProgress();
   renderRecentPicksCards();
-  fetchAndShowTickerNews();
+  fetchAndShowTickerNews(); // No initial param, so does not restart ticker
   // Set interval for all
   if (pollInterval) clearInterval(pollInterval);
   pollInterval = setInterval(() => {
     updateDraftProgress();
     renderRecentPicksCards();
-    fetchAndShowTickerNews();
+    fetchAndShowTickerNews(); // No initial param, so does not restart ticker
   }, 15000);
 }
