@@ -6,10 +6,8 @@ async function renderRecentPicksCards() {
   section.style.display = '';
   // Fetch recent picks and render as cards
   try {
-    const picksRange = "Picks!A:J";
-    const picksUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${picksRange}?key=${apiKey}`;
-    const playersRange = "Players!A:G";
-    const playersUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${playersRange}?key=${apiKey}`;
+    const picksUrl = 'http://localhost:3001/api/picks';
+    const playersUrl = 'http://localhost:3001/api/players';
     // Fetch picks and players in parallel
     const [picksRes, playersRes] = await Promise.all([
       fetch(picksUrl),
@@ -106,8 +104,7 @@ let recentPickIndex = 0;
 let recentPicksMode = false;
 
 async function fetchAndShowRecentPicksInTicker() {
-  const range = "Picks!A:J";
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+  const url = 'http://localhost:3001/api/picks';
   try {
     const res = await fetch(url);
     const data = await res.json();
@@ -159,8 +156,7 @@ let lastTickerHeader = null;
 let headerItemCount = 0;
 
 async function fetchAndShowTickerNews(initial = false) {
-  const newsRange = 'TickerNews!A:D';
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${newsRange}?key=${apiKey}`;
+  const url = 'http://localhost:3001/api/news';
   try {
     const res = await fetch(url);
     const data = await res.json();
@@ -255,7 +251,7 @@ const apiKey = "AIzaSyAq-IXRgQL7khW_s4UG_L8aEeNd3jooKuk";
 const range = "Data!C:E"; // C = Team Name, D = User ID, E = Avatar URL (no row numbers, grabs all rows)
 
 async function loadTeamInfo(username) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+  const url = 'http://localhost:3001/api/players'; // Use proxy for player/team info
   const avatarImg = document.getElementById('team-avatar');
   const banner = document.querySelector('.welcome-banner');
   // If username is missing or empty, show default
@@ -384,8 +380,7 @@ async function loadTeamInfo(username) {
 }
 
 async function fetchDraftProgress() {
-  const range = "Picks!A:J"; // Adjust range if needed
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+  const url = 'http://localhost:3001/api/picks';
   let res, data;
   try {
     res = await fetch(url);
@@ -584,6 +579,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalElems = document.querySelectorAll('.modal');
   M.Modal.init(modalElems);
 
+  // Make welcome banner float at top and stay fixed while scrolling, with 3D effect
+  const banner = document.getElementById('welcome-banner');
+  if (banner) {
+    banner.style.position = 'fixed';
+    banner.style.top = '0';
+    banner.style.left = '0';
+    banner.style.width = '100%';
+    banner.style.zIndex = '1000';
+    banner.style.background = 'linear-gradient(135deg, #e3eafc 0%, #f5f7fa 100%)';
+    banner.style.boxShadow = '0 4px 24px #1976d2a0, 0 1.5px 0 #fff inset, 0 0 0 2px #1976d2 inset';
+    banner.style.padding = '18px 0 16px 0';
+    banner.style.borderRadius = '0 0 36px 36px';
+    banner.style.transform = 'perspective(600px) translateZ(0)';
+    banner.style.backdropFilter = 'blur(2px)';
+    banner.style.borderBottom = '2px solid #1976d2';
+  }
+  // Add margin-top to main content so it doesn't hide under banner
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent && banner) {
+    mainContent.style.marginTop = banner.offsetHeight + 'px';
+  }
+
   // Start polling for all dashboard sections
   fetchAndShowTickerNews(true); // Start ticker on initial load
   startPollingDashboard();
@@ -602,5 +619,5 @@ function startPollingDashboard() {
     updateDraftProgress();
     renderRecentPicksCards();
     fetchAndShowTickerNews(); // No initial param, so does not restart ticker
-  }, 15000);
+  }, 60000); // Poll every 60 seconds instead of 15 seconds
 }

@@ -11,10 +11,12 @@
   <link rel="icon" type="image/png" href="assets/sfl-logo.png" />
 </head>
 <body>
-  <!-- Sidenav Trigger -->
-  <a href="#" data-target="slide-out" class="sidenav-trigger" style="position:absolute;top:24px;left:24px;">
-    <i class="material-icons">menu</i>
-  </a>
+  <!-- Sidenav Trigger as Floating Action Button -->
+  <div class="fixed-action-btn" style="top:32px;right:32px;position:fixed;z-index:1000;">
+    <a href="#" data-target="slide-out" class="sidenav-trigger btn-floating btn-large blue">
+      <i class="material-icons">menu</i>
+    </a>
+  </div>
 
   <!-- Materialize Sidenav -->
   <ul id="slide-out" class="sidenav">
@@ -116,5 +118,32 @@
       </div>
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      M.Sidenav.init(elems);
+      var menuBtn = document.querySelector('.fixed-action-btn .sidenav-trigger');
+      var sidenav = document.querySelector('.sidenav');
+      if (menuBtn && sidenav) {
+        let lastClick = 0;
+        menuBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var instance = M.Sidenav.getInstance(sidenav);
+          const now = Date.now();
+          // Prevent double open/close by debouncing
+          if (instance.isOpen) {
+            if (now - lastClick > 300) {
+              instance.close();
+              lastClick = now;
+            }
+          } else {
+            instance.open();
+            lastClick = now;
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
