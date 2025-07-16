@@ -10,7 +10,6 @@ async function getFetch() {
   }
   return fetch;
 }
-const app = express();
 const PORT = 3001;
 
 // Google Sheets info
