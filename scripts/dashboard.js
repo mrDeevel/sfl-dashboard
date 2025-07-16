@@ -469,11 +469,11 @@ function renderDraftProgress(picksPerLeague = {}) {
     html += `<div id="draft-progress-grid" style="
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
+      gap: 32px 32px;
       width: 100vw;
       max-width: 100vw;
       box-sizing: border-box;
-      padding: 0 1vw 60px 1vw;
+      padding: 0 2vw 60px 2vw;
       margin: 0 auto 0 auto;">
     `;
     // Responsive adjustment for small screens
@@ -492,17 +492,63 @@ function renderDraftProgress(picksPerLeague = {}) {
         document.head.appendChild(style);
       }
     }, 0);
+    // Get all draft data for timestamp calculations
+    let allDraftData = window._lastDraftData || [];
+    if (!allDraftData.length && typeof fetchDraftProgress === 'function') {
+      fetchDraftProgress().then(data => { window._lastDraftData = data; });
+    }
     for (const league of leagueLetters) {
       if (picksPerLeague[league]) {
         const picks = picksPerLeague[league];
         const percent = Math.min(100, Math.round((picks / totalPicks) * 100));
+        // Find picks for this league
+        let leagueRows = [];
+        if (allDraftData.length) {
+          let startIdx = allDraftData[0][0] === "League Letter" ? 1 : 0;
+          leagueRows = allDraftData.slice(startIdx).filter(row => row[0] === league);
+        }
+        // Parse timestamps from column E (index 4), format 'YYYY-MM-DD HH:mm'
+        let firstTs = null, lastTs = null;
+        for (let row of leagueRows) {
+          let ts = row[4];
+          if (ts && typeof ts === 'string') {
+            // Convert 'YYYY-MM-DD HH:mm' to ISO format for Date parsing
+            let isoTs = ts.replace(' ', 'T');
+            let d = new Date(isoTs);
+            if (!isNaN(d.getTime())) {
+              if (!firstTs || d < firstTs) firstTs = d;
+              if (!lastTs || d > lastTs) lastTs = d;
+            }
+          }
+        }
+        let picksHr = '';
+        let eta = '';
+        if (firstTs && lastTs && leagueRows.length > 1) {
+          let hours = (lastTs - firstTs) / 1000 / 3600;
+          let rate = hours > 0 ? leagueRows.length / hours : 0;
+          picksHr = `Rate: <b>${rate.toFixed(2)}</b> picks/hr`;
+          let remaining = totalPicks - picks;
+          let etaDate = new Date(lastTs.getTime() + (remaining / (rate || 1)) * 3600 * 1000);
+          // Format ETA as abbreviated month and day only (e.g., 'Aug 3')
+          const monthAbbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          let etaDateStr = `${monthAbbr[etaDate.getMonth()]} ${etaDate.getDate()}`;
+          // NFL Week 1 start: 2025-09-04
+          let nflStart = new Date('2025-09-04');
+          let etaColor = etaDate > nflStart ? 'color:#d32f2f;font-weight:600;' : 'color:#388e3c;font-weight:600;';
+          eta = `ETA: <b style="${etaColor}">${etaDateStr}</b>`;
+        } else {
+          picksHr = 'Rate: N/A';
+          eta = 'ETA: N/A';
+        }
         html += `
-          <div class="league-progress-card" data-league="${league}" style="min-width:180px;max-width:320px;flex:1 1 180px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 8px #0001;border-radius:8px;background:#fff;transition:box-shadow 0.2s;">
+          <div class="league-progress-card" data-league="${league}" style="min-width:180px;max-width:320px;flex:1 1 180px;margin-bottom:10px;margin-right:0px;margin-left:0px;cursor:pointer;box-shadow:0 2px 8px #0001;border-radius:12px;background:#fff;transition:box-shadow 0.2s;">
             <div style="font-weight:500;font-size:0.98em;margin-bottom:2px;padding-top:7px;letter-spacing:0.2px;color:#1976d2;">League ${league}</div>
-            <div class="progress" style="height:16px;background:linear-gradient(90deg,#e3eafc,#f5f7fa);border-radius:6px;overflow:hidden;">
-              <div class="determinate" style="width:${percent}%;background:linear-gradient(90deg,#1976d2 60%,#42a5f5 100%);height:16px;border-radius:6px 0 0 6px;box-shadow:0 0 8px #1976d2a0 inset;"></div>
+            <div class="progress" style="height:20px;position:relative;background:linear-gradient(90deg,#e3eafc,#f5f7fa);border-radius:6px;overflow:hidden;">
+              <div class="determinate" style="width:${percent}%;background:linear-gradient(90deg,#1976d2 60%,#42a5f5 100%);height:20px;border-radius:6px 0 0 6px;box-shadow:0 0 8px #1976d2a0 inset;position:absolute;top:0;left:0;"></div>
+              <span style="position:absolute;top:0;left:0;width:100%;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.98em;font-weight:600;color:#fff;text-shadow:0 1px 4px #1976d2a0;pointer-events:none;">${percent}%</span>
             </div>
-            <div style="font-size:0.93em;margin-top:2px;margin-bottom:7px;color:#444;font-weight:400;">${picks} / ${totalPicks}</div>
+            <div style="font-size:0.92em;color:#1976d2;margin-bottom:2px;">${picksHr}</div>
+            <div style="font-size:0.92em;color:#388e3c;margin-bottom:2px;">${eta}</div>
           </div>
         `;
       }
