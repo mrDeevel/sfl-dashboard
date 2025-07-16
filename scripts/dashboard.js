@@ -581,40 +581,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadTeamInfo(username);
 
-  // ...existing code...
-
   // Initialize Materialize modal
   const modalElems = document.querySelectorAll('.modal');
   M.Modal.init(modalElems);
 
-  // Call updateDraftProgress to fetch and display the latest draft data
-  updateDraftProgress();
-
-  // Fetch and show ticker news (default)
-  fetchAndShowTickerNews();
-
-  // Render recent picks sidebar/section
-  renderRecentPicksCards();
+  // Start polling for all dashboard sections
+  startPollingDashboard();
 });
 
 let pollInterval = null;
 
-function startPollingDraftProgress() {
-  updateDraftProgress(); // Initial fetch
-  pollInterval = setInterval(updateDraftProgress, 15000);
-}
-
-function loadDraftProgress() {
-  const draftSection = document.getElementById('draft-progress-section');
-
-  // Show the draft progress section
-  draftSection.style.display = '';
-
-  // Fetch and update the draft progress
+function startPollingDashboard() {
+  // Initial fetch for all sections
   updateDraftProgress();
-
-  // Optional: Start polling for updates
-  if (!pollInterval) {
-    pollInterval = setInterval(updateDraftProgress, 15000);
-  }
+  renderRecentPicksCards();
+  fetchAndShowTickerNews();
+  // Set interval for all
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(() => {
+    updateDraftProgress();
+    renderRecentPicksCards();
+    fetchAndShowTickerNews();
+  }, 15000);
 }
