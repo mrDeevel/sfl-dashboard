@@ -71,6 +71,9 @@ app.get('/api/news', async (req, res) => {
   }
 });
 
+const cors = require('cors');
+app.use(cors());
+
 app.listen(PORT, () => {
   console.log(`SFL Proxy running on port ${PORT}`);
 });
