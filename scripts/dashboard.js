@@ -6,8 +6,8 @@ async function renderRecentPicksCards() {
   section.style.display = '';
   // Fetch recent picks and render as cards
   try {
-    const picksUrl = 'http://localhost:3001/api/picks';
-    const playersUrl = 'http://localhost:3001/api/players';
+    const picksUrl = 'https://sfl-dashboard.onrender.com/api/picks';
+    const playersUrl = 'https://sfl-dashboard.onrender.com/api/players';
     // Fetch picks and players in parallel
     const [picksRes, playersRes] = await Promise.all([
       fetch(picksUrl),
@@ -104,7 +104,7 @@ let recentPickIndex = 0;
 let recentPicksMode = false;
 
 async function fetchAndShowRecentPicksInTicker() {
-  const url = 'http://localhost:3001/api/picks';
+  const url = 'https://sfl-dashboard.onrender.com/api/picks';
   try {
     const res = await fetch(url);
     const data = await res.json();
@@ -156,7 +156,7 @@ let lastTickerHeader = null;
 let headerItemCount = 0;
 
 async function fetchAndShowTickerNews(initial = false) {
-  const url = 'http://localhost:3001/api/news';
+  const url = 'https://sfl-dashboard.onrender.com/api/news';
   try {
     const res = await fetch(url);
     const data = await res.json();
@@ -251,7 +251,7 @@ const apiKey = "AIzaSyAq-IXRgQL7khW_s4UG_L8aEeNd3jooKuk";
 const range = "Data!C:E"; // C = Team Name, D = User ID, E = Avatar URL (no row numbers, grabs all rows)
 
 async function loadTeamInfo(username) {
-  const url = 'http://localhost:3001/api/players'; // Use proxy for player/team info
+  const url = 'https://sfl-dashboard.onrender.com/api/players'; // Use proxy for player/team info
   const avatarImg = document.getElementById('team-avatar');
   const banner = document.querySelector('.welcome-banner');
   // If username is missing or empty, show default
@@ -380,7 +380,7 @@ async function loadTeamInfo(username) {
 }
 
 async function fetchDraftProgress() {
-  const url = 'http://localhost:3001/api/picks';
+  const url = 'https://sfl-dashboard.onrender.com/api/picks';
   let res, data;
   try {
     res = await fetch(url);
