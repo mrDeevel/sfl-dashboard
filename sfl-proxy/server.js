@@ -1,6 +1,8 @@
 const express = require('express');
 let fetch;
 
+const cors = require('cors');
+app.use(cors());
 async function getFetch() {
   if (!fetch) {
     fetch = (await import('node-fetch')).default;
