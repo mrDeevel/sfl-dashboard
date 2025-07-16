@@ -336,40 +336,34 @@ async function loadTeamInfo(username) {
           const pickAbbr = `${latestLeaguePick[2]}.${latestLeaguePick[3]}`;
           currentPickInfo = `<div class=\"user-header-current-pick\" style=\"font-size:1em;margin-top:4px;\">Current Pick: <b>${pickAbbr}</b> - ${latestLeaguePick[5]} (${latestLeaguePick[6]}, ${latestLeaguePick[7]}) by ${latestLeaguePick[8]}</div>`;
         }
-        // Calculate picks till user's next pick using draft slot and snake order
+        // Calculate picks till user's next pick using 12-team snake draft logic
         if (userLeague && draftSlot) {
-          const numTeams = leaguePicks.reduce((set, row) => set.add(row[3]), new Set()).size || 12; // fallback to 12
+          const numTeams = 12;
           const pickSet = new Set(leaguePicks.map(row => `${row[2]}.${row[3]}`));
           let userSlot = parseInt(draftSlot, 10);
           let lastPick = leaguePicks.length ? leaguePicks[leaguePicks.length - 1] : null;
           let lastRound = lastPick ? parseInt(lastPick[2], 10) : 1;
-          let nextRound = lastRound;
-          let picksAway = 0;
-          let found = false;
+          let nextRound = lastRound + 1;
+          let nextSlot = (nextRound % 2 === 1) ? userSlot : (numTeams - userSlot + 1);
           // Find the next pick for this slot after the last pick
-          while (!found && picksAway < 1000) { // safety limit
+          while (pickSet.has(`${nextRound}.${nextSlot}`)) {
             nextRound++;
-            let slot;
-            if (nextRound % 2 === 1) {
-              slot = userSlot;
-            } else {
-              slot = numTeams - userSlot + 1;
-            }
-            if (!pickSet.has(`${nextRound}.${slot}`)) {
+            nextSlot = (nextRound % 2 === 1) ? userSlot : (numTeams - userSlot + 1);
+          }
+          // Calculate picks away
+          let picksAway = 0;
+          let lastPickNum = leaguePicks.length;
+          let totalDrafted = leaguePicks.length;
+          let found = false;
+          for (let r = lastRound + 1; r <= 16 && !found; r++) {
+            let slot = (r % 2 === 1) ? userSlot : (numTeams - userSlot + 1);
+            if (!pickSet.has(`${r}.${slot}`)) {
+              // How many picks between last pick and this pick?
+              let picksSinceLast = (r - lastRound - 1) * numTeams + ((slot > (lastPick ? parseInt(lastPick[3], 10) : 0)) ? slot - (lastPick ? parseInt(lastPick[3], 10) : 0) : numTeams - ((lastPick ? parseInt(lastPick[3], 10) : 0) - slot));
+              picksAway = picksSinceLast;
               found = true;
-              let picksSinceLast = 0;
-              // Count picks away: count picks in leaguePicks after lastPick until this next pick
-              let lastPickIndex = leaguePicks.length - 1;
-              for (let i = lastPickIndex + 1; i < numTeams * 20; i++) { // up to 20 rounds
-                let r = Math.floor(i / numTeams) + 1;
-                let s = (r % 2 === 1) ? userSlot : (numTeams - userSlot + 1);
-                if (r === nextRound && s === slot) break;
-                picksSinceLast++;
-              }
-              let nextPickAbbr = `${nextRound}.${slot}`;
-              picksTillUser = `<div class=\"user-header-picks-till\" style=\"font-size:1em;color:#388e3c;margin-top:2px;\">Your next pick: <b>${nextPickAbbr}</b> (${picksSinceLast + 1} picks away)</div>`;
-            } else {
-              picksAway++;
+              let nextPickAbbr = `${r}.${slot}`;
+              picksTillUser = `<div class=\"user-header-picks-till\" style=\"font-size:1em;color:#388e3c;margin-top:2px;\">Your next pick: <b>${nextPickAbbr}</b> (${picksAway} picks away)</div>`;
             }
           }
         } else {
