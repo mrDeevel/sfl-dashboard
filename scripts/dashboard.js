@@ -380,7 +380,7 @@ async function loadTeamInfo(username) {
 }
 
 async function fetchDraftProgress() {
-  const url = 'https://sfl-dashboard.onrender.com/api/picks';
+  const url = `https://sfl-dashboard.onrender.com/api/picks?timestamp=${Date.now()}`; // Cache-busting query parameter
   let res, data;
   try {
     res = await fetch(url);
@@ -773,6 +773,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize Materialize modal
   const modalElems = document.querySelectorAll('.modal');
   M.Modal.init(modalElems);
+
+  // Add manual refresh button functionality
+  const refreshButton = document.getElementById('refresh-draft-data');
+  if (refreshButton) {
+    refreshButton.addEventListener('click', async () => {
+      console.log("Manual refresh triggered");
+      await updateDraftProgress();
+    });
+  }
 
   // Make welcome banner float at top and stay fixed while scrolling, with 3D effect
   const banner = document.getElementById('welcome-banner');
