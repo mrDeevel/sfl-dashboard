@@ -42,7 +42,6 @@ app.get('/api/picks', async (req, res) => {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Picks!A:J?key=${apiKey}`;
     const data = await fetchAndCache(url, { value: picksCache }, { value: picksCacheTime });
     picksCache = data;
-    picksCacheTime = Date.now();
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch picks' });
@@ -54,7 +53,6 @@ app.get('/api/players', async (req, res) => {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Players!A:G?key=${apiKey}`;
     const data = await fetchAndCache(url, { value: playersCache }, { value: playersCacheTime });
     playersCache = data;
-    playersCacheTime = Date.now();
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch players' });
@@ -66,7 +64,6 @@ app.get('/api/news', async (req, res) => {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/TickerNews!A:D?key=${apiKey}`;
     const data = await fetchAndCache(url, { value: newsCache }, { value: newsCacheTime });
     newsCache = data;
-    newsCacheTime = Date.now();
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch news' });

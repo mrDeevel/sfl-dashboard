@@ -783,6 +783,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Add periodic polling to refresh draft data every 30 seconds
+  setInterval(async () => {
+    console.log("Periodic refresh triggered");
+    await updateDraftProgress();
+  }, 30000);
+
   // Make welcome banner float at top and stay fixed while scrolling, with 3D effect
   const banner = document.getElementById('welcome-banner');
   if (banner) {
